@@ -178,29 +178,32 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                 const SizedBox(height: 10),
 
                 // Filter Chips
-                Row(
-                  children: ['All (48)', 'Eligible for me', 'Available Seats'].map((filter) {
-                    final isSelected = _selectedFilter == filter;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(filter),
-                        labelStyle: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : AppTheme.textSecondary,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: ['All (48)', 'Eligible for me', 'Available Seats'].map((filter) {
+                      final isSelected = _selectedFilter == filter;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(filter),
+                          labelStyle: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : AppTheme.textSecondary,
+                          ),
+                          selected: isSelected,
+                          selectedColor: AppTheme.navy,
+                          backgroundColor: AppTheme.canvas,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(color: isSelected ? AppTheme.navy : AppTheme.border),
+                          ),
+                          onSelected: (_) => setState(() => _selectedFilter = filter),
                         ),
-                        selected: isSelected,
-                        selectedColor: AppTheme.navy,
-                        backgroundColor: AppTheme.canvas,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(color: isSelected ? AppTheme.navy : AppTheme.border),
-                        ),
-                        onSelected: (_) => setState(() => _selectedFilter = filter),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ],
             ),
@@ -297,14 +300,19 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                course.code,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.navy,
+              Expanded(
+                child: Text(
+                  course.code,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.navy,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(

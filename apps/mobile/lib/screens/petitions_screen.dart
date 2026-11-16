@@ -221,13 +221,17 @@ class _PetitionsScreenState extends State<PetitionsScreen> {
                   children: [
                     const Icon(Icons.vpn_key_outlined, size: 12, color: AppTheme.teal),
                     const SizedBox(width: 6),
-                    Text(
-                      'RDS Token: ${petition.rdsToken}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.navy,
+                    Flexible(
+                      child: Text(
+                        'RDS Token: ${petition.rdsToken}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.navy,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

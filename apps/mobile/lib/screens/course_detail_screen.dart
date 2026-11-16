@@ -297,7 +297,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
   Widget _buildStatBox(String val, String label, {bool isPositive = false}) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
           color: isPositive ? AppTheme.emeraldLight : AppTheme.canvas,
           borderRadius: BorderRadius.circular(8),
@@ -307,17 +307,25 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
         ),
         child: Column(
           children: [
-            Text(
-              val,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isPositive ? AppTheme.emeraldDark : AppTheme.navy,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                val,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isPositive ? AppTheme.emeraldDark : AppTheme.navy,
+                ),
+                maxLines: 1,
               ),
             ),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 9, color: AppTheme.textMuted),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 9, color: AppTheme.textMuted),
+                maxLines: 1,
+              ),
             ),
           ],
         ),
@@ -446,10 +454,14 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                   Text(
                     sec.faculty,
                     style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     '${sec.days} ${sec.timeSlot} • ${sec.room}',
                     style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

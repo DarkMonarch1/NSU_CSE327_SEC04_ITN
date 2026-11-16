@@ -83,12 +83,16 @@ class MobileBottomSheets {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '$courseCode Sec $sectionNumber',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
+                  Flexible(
+                    child: Text(
+                      '$courseCode Sec $sectionNumber',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
@@ -109,10 +113,15 @@ class MobileBottomSheets {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'RDS Transaction Token',
-                          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                        const Flexible(
+                          child: Text(
+                            'RDS Transaction Token',
+                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           rdsToken,
                           style: const TextStyle(
@@ -130,11 +139,17 @@ class MobileBottomSheets {
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Atomic Lock Buffer',
-                          style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                        Flexible(
+                          child: Text(
+                            'Atomic Lock Buffer',
+                            style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
+                        SizedBox(width: 8),
                         Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.bolt, color: AppTheme.emerald, size: 16),
                             SizedBox(width: 4),
@@ -314,17 +329,20 @@ class MobileBottomSheets {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                         side: const BorderSide(color: AppTheme.border),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text(
-                        'Take CSE 215/311 Alt',
-                        style: TextStyle(fontSize: 12, color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Take CSE 215/311 Alt',
+                          style: TextStyle(fontSize: 12, color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -349,13 +367,16 @@ class MobileBottomSheets {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.amber,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text(
-                        'Ask Advisor Exception',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Ask Advisor Exception',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
@@ -408,29 +429,36 @@ class MobileBottomSheets {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'CAPACITY REACHED (40/40)',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                              color: AppTheme.crimson,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'CAPACITY REACHED (40/40)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                                color: AppTheme.crimson,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$courseCode Sec $fullSection • Prof. Dr. Rajesh Palit',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.navy,
+                            const SizedBox(height: 2),
+                            Text(
+                              '$courseCode Sec $fullSection • Prof. Dr. Rajesh Palit',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.navy,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
@@ -618,20 +646,27 @@ class MobileBottomSheets {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.navy),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$time • $room',
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.navy),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$time • $room',
+                    style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
