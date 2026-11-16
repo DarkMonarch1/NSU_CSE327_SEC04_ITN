@@ -224,9 +224,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                 children: [
                   const Icon(Icons.lock_clock_outlined, size: 14, color: AppTheme.teal),
                   const SizedBox(width: 4),
-                  Text(
-                    '60s atomic reservation lock will be activated',
-                    style: TextStyle(fontSize: 11, color: AppTheme.teal.withOpacity(0.9), fontWeight: FontWeight.w600),
+                  Flexible(
+                    child: Text(
+                      '60s atomic reservation lock will be activated',
+                      style: TextStyle(fontSize: 11, color: AppTheme.teal.withOpacity(0.9), fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ],
               ),

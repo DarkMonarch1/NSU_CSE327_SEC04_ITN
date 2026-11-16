@@ -71,4 +71,43 @@ void main() {
 
     expect(find.text('Good morning, Rahim'), findsOneWidget);
   });
+
+  testWidgets('SmartAdvisor Mobile App narrow viewport layout smoke test (360dp)',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(const SmartAdvisorApp());
+    await tester.pump();
+
+    final signInButton = find.textContaining('Sign in');
+    expect(signInButton, findsOneWidget);
+    await tester.tap(signInButton);
+    await tester.pump(const Duration(seconds: 1));
+
+    // Advising tab
+    expect(find.text('Good morning, Rahim'), findsOneWidget);
+
+    // Schedule tab
+    final scheduleTab = find.text('Schedule');
+    await tester.tap(scheduleTab.first);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Instant Schedule AI Builder'), findsOneWidget);
+
+    // Prereqs tab
+    final prereqsTab = find.text('Prereqs');
+    await tester.tap(prereqsTab);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Seat Requests & Petitions'), findsOneWidget);
+
+    // Alerts tab
+    final alertsTab = find.text('Alerts & IT');
+    await tester.tap(alertsTab);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Alerts & Real-Time Radar'), findsOneWidget);
+  });
 }

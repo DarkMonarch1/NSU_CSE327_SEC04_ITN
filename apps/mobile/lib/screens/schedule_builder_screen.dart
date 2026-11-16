@@ -20,24 +20,31 @@ class ScheduleBuilderScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Instant Schedule AI Builder',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.navy,
-                      letterSpacing: -0.2,
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Instant Schedule AI Builder',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.navy,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Text(
-                    'Zero-Clash Optimization Engine',
-                    style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                  ),
-                ],
+                    Text(
+                      'Zero-Clash Optimization Engine',
+                      style: TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               // Milestone First vs Minimize Gaps Toggle
               Container(
                 padding: const EdgeInsets.all(3),
@@ -47,6 +54,7 @@ class ScheduleBuilderScreen extends StatelessWidget {
                   border: Border.all(color: AppTheme.border),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     _buildStrategyPill(
                       label: 'Milestone',
@@ -103,15 +111,20 @@ class ScheduleBuilderScreen extends StatelessWidget {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '5-DAY TIMETABLE PREVIEW',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
-                        color: AppTheme.textMuted,
+                    Expanded(
+                      child: Text(
+                        '5-DAY TIMETABLE PREVIEW',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: AppTheme.textMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    SizedBox(width: 8),
                     Text(
                       'ST • MW • RA Pattern',
                       style: TextStyle(fontSize: 10, color: AppTheme.textMuted),
@@ -160,15 +173,20 @@ class ScheduleBuilderScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'STAGED COURSES (${appState.stagedCourses.length})',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
-                  color: AppTheme.textMuted,
+              Expanded(
+                child: Text(
+                  'STAGED COURSES (${appState.stagedCourses.length})',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                    color: AppTheme.textMuted,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               const Text(
                 'Auto-Ranked by AI',
                 style: TextStyle(fontSize: 10, color: AppTheme.teal, fontWeight: FontWeight.bold),
@@ -228,7 +246,7 @@ class ScheduleBuilderScreen extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.navy : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -240,6 +258,8 @@ class ScheduleBuilderScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : AppTheme.textSecondary,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -252,7 +272,7 @@ class ScheduleBuilderScreen extends StatelessWidget {
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         decoration: BoxDecoration(
           color: color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(10),
@@ -263,9 +283,15 @@ class ScheduleBuilderScreen extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: color),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+                  maxLines: 1,
+                ),
+              ),
             ),
           ],
         ),
@@ -320,30 +346,40 @@ class ScheduleBuilderScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    '${course.courseCode} Sec ${course.sectionNumber}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.navy),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '(${course.credits.toStringAsFixed(1)} Cr)',
-                    style: const TextStyle(fontSize: 11, color: AppTheme.teal, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${course.days} ${course.timeSlot} • ${course.room}',
-                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${course.courseCode} Sec ${course.sectionNumber}',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.navy),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '(${course.credits.toStringAsFixed(1)} Cr)',
+                      style: const TextStyle(fontSize: 11, color: AppTheme.teal, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${course.days} ${course.timeSlot} • ${course.room}',
+                  style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextButton(
                 onPressed: () {

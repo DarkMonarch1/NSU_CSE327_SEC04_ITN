@@ -109,14 +109,18 @@ class _PriorityWindowCardState extends State<PriorityWindowCard> {
           const SizedBox(height: 14),
 
           // Big ticking countdown
-          Text(
-            '$hours : $minutes : $seconds HRS',
-            style: const TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-              color: Colors.white,
-              fontFamily: 'monospace',
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '$hours : $minutes : $seconds HRS',
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+                color: Colors.white,
+                fontFamily: 'monospace',
+              ),
             ),
           ),
           const SizedBox(height: 4),

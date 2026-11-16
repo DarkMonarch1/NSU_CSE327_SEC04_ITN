@@ -15,6 +15,7 @@ class PersistentAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppTheme.navy,
       elevation: 0,
       title: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(6),
@@ -25,12 +26,16 @@ class PersistentAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: const Icon(Icons.school, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 10),
-          const Text(
-            'SmartAdvisor NSU',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.2,
+          const Flexible(
+            child: Text(
+              'SmartAdvisor NSU',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
             ),
           ),
         ],

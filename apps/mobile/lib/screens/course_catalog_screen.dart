@@ -238,20 +238,25 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'ADVISING CART',
-                        style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${widget.appState.totalCredits.toStringAsFixed(1)} / 15.0 Cr (${widget.appState.stagedCourses.length} Staged)',
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'ADVISING CART',
+                          style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          '${widget.appState.totalCredits.toStringAsFixed(1)} / 15.0 Cr (${widget.appState.stagedCourses.length} Staged)',
+                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);

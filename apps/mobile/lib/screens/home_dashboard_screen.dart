@@ -22,29 +22,36 @@ class HomeDashboardScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Good morning, ${appState.studentName.split(' ').first}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.navy,
-                      letterSpacing: -0.3,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Good morning, ${appState.studentName.split(' ').first}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.navy,
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${appState.studentId} • ${appState.standing}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.textMuted,
-                      fontFamily: 'monospace',
+                    const SizedBox(height: 2),
+                    Text(
+                      '${appState.studentId} • ${appState.standing}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textMuted,
+                        fontFamily: 'monospace',
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -145,15 +152,20 @@ class HomeDashboardScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'LIVE FEED & FAST-ENROLL',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
-                  color: AppTheme.textMuted,
+              const Expanded(
+                child: Text(
+                  'LIVE FEED & FAST-ENROLL',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                    color: AppTheme.textMuted,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               InkWell(
                 onTap: () {
                   Navigator.push(
@@ -324,12 +336,16 @@ class HomeDashboardScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      '$code Sec $section',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.navy,
+                    Expanded(
+                      child: Text(
+                        '$code Sec $section',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.navy,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -353,10 +369,14 @@ class HomeDashboardScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   faculty,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary),
                 ),
                 Text(
                   time,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 10, color: AppTheme.textMuted),
                 ),
               ],

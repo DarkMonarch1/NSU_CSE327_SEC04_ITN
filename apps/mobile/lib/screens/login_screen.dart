@@ -59,13 +59,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        'RDS GATEWAY LIVE • NSU Official',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                      const Flexible(
+                        child: Text(
+                          'RDS GATEWAY LIVE • NSU Official',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -118,14 +122,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Student Portal',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.navy,
+                        const Flexible(
+                          child: Text(
+                            'Student Portal',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.navy,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -221,9 +230,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Remember on this device',
-                          style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                        const Expanded(
+                          child: Text(
+                            'Remember on this device',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 11, color: AppTheme.textSecondary),
+                          ),
                         ),
                       ],
                     ),
