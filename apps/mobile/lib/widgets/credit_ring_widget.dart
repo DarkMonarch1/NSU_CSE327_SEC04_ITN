@@ -74,7 +74,10 @@ class CreditSummaryRing extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -91,7 +94,6 @@ class CreditSummaryRing extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     const Text(
                       '80% Utilized',
                       style: TextStyle(fontSize: 11, color: AppTheme.textMuted),

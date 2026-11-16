@@ -58,9 +58,10 @@ class _PriorityWindowCardState extends State<PriorityWindowCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppTheme.teal.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(6),
@@ -69,14 +70,14 @@ class _PriorityWindowCardState extends State<PriorityWindowCard> {
                     child: const Text(
                       'PRIORITY WINDOW',
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 9,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
+                        letterSpacing: 0.6,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Container(
                     width: 6,
                     height: 6,
@@ -87,21 +88,29 @@ class _PriorityWindowCardState extends State<PriorityWindowCard> {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 12),
-                    SizedBox(width: 4),
-                    Text(
-                      'Cart Ready',
-                      style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 12),
+                      SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          'Cart Ready',
+                          style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

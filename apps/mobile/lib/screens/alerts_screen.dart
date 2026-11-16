@@ -107,29 +107,32 @@ class _AlertsScreenState extends State<AlertsScreen> {
           const SizedBox(height: 10),
 
           // Filter Chips
-          Row(
-            children: ['All 5', 'Seats 3', 'Decisions 2'].map((filter) {
-              final isSelected = _selectedFilter == filter;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(filter),
-                  labelStyle: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : AppTheme.textSecondary,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['All 5', 'Seats 3', 'Decisions 2'].map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(filter),
+                    labelStyle: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : AppTheme.textSecondary,
+                    ),
+                    selected: isSelected,
+                    selectedColor: AppTheme.navy,
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: isSelected ? AppTheme.navy : AppTheme.border),
+                    ),
+                    onSelected: (_) => setState(() => _selectedFilter = filter),
                   ),
-                  selected: isSelected,
-                  selectedColor: AppTheme.navy,
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: isSelected ? AppTheme.navy : AppTheme.border),
-                  ),
-                  onSelected: (_) => setState(() => _selectedFilter = filter),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
           const SizedBox(height: 14),
 
