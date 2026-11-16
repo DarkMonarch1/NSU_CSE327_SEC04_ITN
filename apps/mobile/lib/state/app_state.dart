@@ -200,7 +200,7 @@ class AppState extends ChangeNotifier {
   }
 
   void dismissAlert(String id) {
-    _alerts.removeWhere((a) => a.id === id);
+    _alerts.removeWhere((a) => a.id == id);
     notifyListeners();
   }
 }

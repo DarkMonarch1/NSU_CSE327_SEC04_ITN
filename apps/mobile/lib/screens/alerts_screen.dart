@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../state/app_state.dart';
 import '../models/models.dart';
-import '../widgets/bottom_sheets.dart';
 
 class AlertsScreen extends StatefulWidget {
   final AppState appState;

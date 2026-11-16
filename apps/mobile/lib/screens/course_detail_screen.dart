@@ -100,7 +100,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
                     children: [
                       const Text(
                         'CSE 327',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.black, color: AppTheme.navy),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.navy),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
