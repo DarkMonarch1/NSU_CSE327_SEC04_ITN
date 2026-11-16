@@ -94,7 +94,7 @@ npm run dev
 ```bash
 cd apps/mobile
 flutter pub get
-flutter analyze
+flutter analyze --no-fatal-infos
 flutter test
 ```
 
