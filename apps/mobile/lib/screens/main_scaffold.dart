@@ -112,3 +112,5 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 }
+
+typedef MainNavigationShell = MainScaffold;

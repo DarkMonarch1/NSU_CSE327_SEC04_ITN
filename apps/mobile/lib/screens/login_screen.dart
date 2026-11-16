@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Title & Branding
               const Text(
-                'SmartAdvisor',
+                'SmartAdvisor NSU',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,

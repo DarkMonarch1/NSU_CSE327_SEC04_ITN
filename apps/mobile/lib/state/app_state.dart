@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 
 class AppState extends ChangeNotifier {
-  bool _isLoggedIn = true;
-  int _currentTab = 0; // 0: Advising, 1: Schedule, 2: Prereqs, 3: Alerts & IT
-  bool _isMilestoneFirst = true;
+  bool _isLoggedIn;
+  int _currentTab;
+  bool _isMilestoneFirst;
+
+  AppState({
+    bool initialLoggedIn = false,
+    int initialTab = 0,
+    bool isMilestoneFirst = true,
+  })  : _isLoggedIn = initialLoggedIn,
+        _currentTab = initialTab,
+        _isMilestoneFirst = isMilestoneFirst;
 
   // Student Profile Data
   final String studentName = 'Rahim Ahmed';

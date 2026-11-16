@@ -9,25 +9,36 @@ void main() {
 }
 
 class SmartAdvisorMobileApp extends StatefulWidget {
-  const SmartAdvisorMobileApp({super.key});
+  final AppState? appState;
+
+  const SmartAdvisorMobileApp({super.key, this.appState});
 
   @override
   State<SmartAdvisorMobileApp> createState() => _SmartAdvisorMobileAppState();
 }
 
 class _SmartAdvisorMobileAppState extends State<SmartAdvisorMobileApp> {
-  final AppState _appState = AppState();
+  late final AppState _appState;
+  bool _isLocalState = false;
 
   @override
   void initState() {
     super.initState();
+    if (widget.appState != null) {
+      _appState = widget.appState!;
+    } else {
+      _appState = AppState();
+      _isLocalState = true;
+    }
     _appState.addListener(_onStateChange);
   }
 
   @override
   void dispose() {
     _appState.removeListener(_onStateChange);
-    _appState.dispose();
+    if (_isLocalState) {
+      _appState.dispose();
+    }
     super.dispose();
   }
 
@@ -47,3 +58,6 @@ class _SmartAdvisorMobileAppState extends State<SmartAdvisorMobileApp> {
     );
   }
 }
+
+// Support alias for both naming conventions
+typedef SmartAdvisorApp = SmartAdvisorMobileApp;

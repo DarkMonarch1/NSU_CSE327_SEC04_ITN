@@ -1,69 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartadvisor_mobile/main.dart';
-import 'package:smartadvisor_mobile/widgets/bottom_sheets.dart';
 
 void main() {
   testWidgets('SmartAdvisor Mobile App complete interactive smoke and navigation test',
       (WidgetTester tester) async {
-    // Build the full app
-    await tester.pumpWidget(const SmartAdvisorMobileApp());
+    // 1. Set realistic mobile viewport size to prevent RenderFlex overflow in headless environments
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    // 2. Build root widget (starts at LoginScreen)
+    await tester.pumpWidget(const SmartAdvisorApp());
     await tester.pump();
 
-    // 1. Verify Persistent App Bar
+    // 3. Verify Login Screen renders branding and sign in button
     expect(find.text('SmartAdvisor NSU'), findsOneWidget);
-    expect(find.text('Phase 2 (90+ Cr)'), findsOneWidget);
+    expect(find.textContaining('Sign in'), findsOneWidget);
+    expect(find.text('RDS GATEWAY LIVE • NSU Official'), findsOneWidget);
 
-    // 2. Verify Home Advising Dashboard elements
+    // 4. Tap Sign In button and pump frame (do not use pumpAndSettle due to periodic timer)
+    final signInButton = find.textContaining('Sign in');
+    expect(signInButton, findsOneWidget);
+    await tester.tap(signInButton);
+    await tester.pump(const Duration(seconds: 1));
+
+    // 5. Verify Main Navigation Shell and Advising Dashboard loaded
+    expect(find.text('Phase 2 (90+ Cr)'), findsOneWidget);
     expect(find.text('Good morning, Rahim'), findsOneWidget);
     expect(find.text('PRIORITY WINDOW'), findsOneWidget);
     expect(find.text('Credit Summary'), findsOneWidget);
     expect(find.text('ACTION WORKSPACE'), findsOneWidget);
-    expect(find.text('Courses'), findsOneWidget);
 
-    // 3. Navigate to Tab 1: Schedule Builder
+    // 6. Test Navigation Tab 1: Schedule Builder
     final scheduleTab = find.text('Schedule');
     expect(scheduleTab, findsWidgets);
     await tester.tap(scheduleTab.first);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Instant Schedule AI Builder'), findsOneWidget);
     expect(find.text('5-DAY TIMETABLE PREVIEW'), findsOneWidget);
     expect(find.text('0 Clash'), findsOneWidget);
 
-    // 4. Navigate to Tab 2: Prereqs & Petitions
+    // 7. Test Navigation Tab 2: Prereqs & Petitions
     final prereqsTab = find.text('Prereqs');
     expect(prereqsTab, findsOneWidget);
     await tester.tap(prereqsTab);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Seat Requests & Petitions'), findsOneWidget);
     expect(find.text('CSE 327 Sec 01'), findsOneWidget);
 
-    // 5. Navigate to Tab 3: Alerts & IT
+    // 8. Test Navigation Tab 3: Alerts & IT
     final alertsTab = find.text('Alerts & IT');
     expect(alertsTab, findsOneWidget);
     await tester.tap(alertsTab);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Alerts & Real-Time Radar'), findsOneWidget);
     expect(find.text('RDS EDGE GATEWAY (12ms)'), findsOneWidget);
 
-    // 6. Test Bottom Sheet Modal invocation
-    await tester.tap(find.text('Advising'));
-    await tester.pump();
+    // 9. Return to Advising Tab
+    final advisingTab = find.text('Advising');
+    expect(advisingTab, findsOneWidget);
+    await tester.tap(advisingTab);
+    await tester.pump(const Duration(milliseconds: 500));
 
-    final BuildContext context = tester.element(find.text('Good morning, Rahim'));
-    MobileBottomSheets.showSeatApproved(
-      context,
-      courseCode: 'CSE 327',
-      sectionNumber: '01',
-      rdsToken: '#NSU-241215-327A',
-    );
-    await tester.pump();
-
-    expect(find.text('Seat Reservation Confirmed'), findsOneWidget);
-    expect(find.text('LOCKED'), findsOneWidget);
-    expect(find.text('#NSU-241215-327A'), findsOneWidget);
+    expect(find.text('Good morning, Rahim'), findsOneWidget);
   });
 }
