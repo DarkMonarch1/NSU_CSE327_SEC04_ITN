@@ -1,160 +1,302 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSmartAdvisor } from '@/store/smartAdvisorStore';
+import { UserRole } from '@/types';
 import {
   GraduationCap,
-  CheckCircle2,
-  Cpu,
-  Layers,
-  Database,
+  Users,
   ShieldCheck,
   Zap,
-  Server
+  Lock,
+  ArrowRight,
+  Sparkles,
+  Server,
+  Activity,
+  Layers,
+  CheckCircle2,
+  ExternalLink
 } from 'lucide-react';
 
-export default function Home() {
+export default function LoginPage() {
+  const router = useRouter();
+  const { setRole } = useSmartAdvisor();
+
+  const [activeTab, setActiveTab] = useState<UserRole>('student');
+  const [nsuId, setNsuId] = useState('2412159042');
+  const [password, setPassword] = useState('••••••••••••');
+  const [rememberMe, setRememberMe] = useState(true);
+
+  const handleRoleTabChange = (role: UserRole) => {
+    setActiveTab(role);
+    if (role === 'student') {
+      setNsuId('2412159042');
+    } else if (role === 'faculty') {
+      setNsuId('nova.ahmed');
+    } else if (role === 'admin') {
+      setNsuId('admin.itops');
+    }
+  };
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRole(activeTab);
+    if (activeTab === 'student') {
+      router.push('/student/dashboard');
+    } else if (activeTab === 'faculty') {
+      router.push('/faculty/exceptions');
+    } else {
+      router.push('/admin/health');
+    }
+  };
+
+  const quickDemoLogin = (role: UserRole, targetRoute: string) => {
+    setRole(role);
+    router.push(targetRoute);
+  };
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-950 text-white selection:bg-indigo-500 selection:text-white">
-      {/* Top Header */}
-      <header className="border-b border-slate-700/60 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-600/30">
-              <GraduationCap className="h-6 w-6 text-white" />
+    <div className="min-h-[calc(100vh-2.75rem)] flex flex-col lg:flex-row bg-slate-50 selection:bg-teal-500 selection:text-white">
+      {/* Left Dark Navy Hero Panel */}
+      <div className="lg:w-1/2 bg-[#0F2942] text-white p-8 sm:p-12 lg:p-16 flex flex-col justify-between relative overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 rounded-full bg-teal-500/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+
+        <div>
+          {/* Top Status Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-teal-300 font-mono tracking-wide mb-8">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            RDS GATEWAY LIVE &bull; NSU Official &bull; Bashundhara Campus
+          </div>
+
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-4 leading-tight">
+            Register smarter, <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-sky-300 to-indigo-300">
+              not harder.
+            </span>
+          </h1>
+
+          <p className="text-slate-300 text-sm sm:text-base max-w-lg leading-relaxed mb-10 font-normal">
+            Autonomous advising and registration engine engineered to eliminate launch-minute seat contention,
+            prerequisite errors, and manual approval bottlenecks.
+          </p>
+
+          {/* 3 Glass KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+            <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-teal-400/30 transition-all">
+              <div className="text-xl sm:text-2xl font-black text-white tabular-nums">10,000+</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">Concurrent Users</div>
+              <div className="text-[10px] text-teal-400 mt-0.5">Stress-Tested</div>
             </div>
-            <div>
-              <span className="font-bold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">
-                SmartAdvisor NSU
-              </span>
-              <span className="hidden sm:inline-block ml-2 text-xs text-indigo-400 font-mono px-2 py-0.5 rounded bg-indigo-950/60 border border-indigo-800/50">
-                CSE 327 Sec 04
-              </span>
+
+            <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-teal-400/30 transition-all">
+              <div className="text-xl sm:text-2xl font-black text-white tabular-nums">&lt;200 ms</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">P95 Latency</div>
+              <div className="text-[10px] text-teal-400 mt-0.5">SLA Target Met</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 hover:border-teal-400/30 transition-all">
+              <div className="text-xl sm:text-2xl font-black text-white tabular-nums">&le;500 ms</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">Seat State Sync</div>
+              <div className="text-[10px] text-teal-400 mt-0.5">Redis Pub/Sub</div>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950/60 text-emerald-400 border border-emerald-800/60">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              All Systems Operational
+        </div>
+
+        {/* Academic Supervision Badge */}
+        <div className="pt-6 border-t border-white/10 text-xs text-slate-400 space-y-1">
+          <div className="font-semibold text-slate-300">North South University &bull; Dept. of ECE</div>
+          <div>
+            <strong>Course:</strong> CSE 327 Sec 04 (Software Engineering) &bull; <strong>Supervisor:</strong> Intisar
+            Tahmeed Sir [ITN]
+          </div>
+        </div>
+      </div>
+
+      {/* Right Authentication Card */}
+      <div className="lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200/90 p-8 sm:p-10">
+          {/* Header & Registration Phase Badge */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">Portal Gateway</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Select role and authenticate</p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Phase 2 Registration Slot: Open
             </span>
           </div>
-        </div>
-      </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-20 px-4 sm:px-6 max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-6">
-          <ShieldCheck className="h-4 w-4 text-indigo-400" />
-          North South University &bull; Dept of Electrical & Computer Engineering
-        </div>
-        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6">
-          Autonomous Advising &amp;{' '}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-sky-300 to-teal-300">
-            Registration Engine
-          </span>
-        </h1>
-        <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-8">
-          Eliminating launch-minute seat contention, prerequisite errors, and manual advising bottlenecks through
-          DAG-based curriculum validation, PostgreSQL ACID row locks, and headless RDS workers.
-        </p>
+          {/* Interactive Role Switcher Tabs */}
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl mb-6">
+            <button
+              type="button"
+              onClick={() => handleRoleTabChange('student')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'student'
+                  ? 'bg-white text-nsu-navy shadow-sm border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+              Student
+            </button>
 
-        {/* Academic Supervision Info */}
-        <div className="inline-block p-4 rounded-xl bg-slate-800/80 border border-slate-700/80 shadow-inner max-w-xl text-left">
-          <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">
-            Project Supervision &amp; Course
-          </div>
-          <div className="text-sm text-slate-200">
-            <strong className="text-white">Supervisor:</strong> Intisar Tahmeed Sir [ITN]
-          </div>
-          <div className="text-sm text-slate-300">
-            <strong className="text-white">Course:</strong> CSE 327 (Section 04) &mdash; Software Engineering
-          </div>
-        </div>
-      </section>
+            <button
+              type="button"
+              onClick={() => handleRoleTabChange('faculty')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'faculty'
+                  ? 'bg-white text-nsu-navy shadow-sm border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5 text-teal-600" />
+              Faculty
+            </button>
 
-      {/* Architecture Highlights Grid */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-indigo-500/50 transition-colors">
-            <div className="p-3 bg-indigo-600/20 rounded-lg w-fit text-indigo-400 mb-4">
-              <Layers className="h-6 w-6" />
-            </div>
-            <h3 className="font-semibold text-lg text-white mb-2">Autonomous DAG Engine</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Validates curriculum prerequisites dynamically via a Directed Acyclic Graph with 1-click fallback resolution.
-            </p>
+            <button
+              type="button"
+              onClick={() => handleRoleTabChange('admin')}
+              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                activeTab === 'admin'
+                  ? 'bg-white text-nsu-navy shadow-sm border border-slate-200/60'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5 text-rose-600" />
+              IT Admin
+            </button>
           </div>
 
-          <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-indigo-500/50 transition-colors">
-            <div className="p-3 bg-sky-600/20 rounded-lg w-fit text-sky-400 mb-4">
-              <Database className="h-6 w-6" />
-            </div>
-            <h3 className="font-semibold text-lg text-white mb-2">Zero Double-Booking</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Guaranteed seat atomicity via PostgreSQL 16 row-level locks and strict ACID transactions tested for peak loads.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-indigo-500/50 transition-colors">
-            <div className="p-3 bg-teal-600/20 rounded-lg w-fit text-teal-400 mb-4">
-              <Zap className="h-6 w-6" />
-            </div>
-            <h3 className="font-semibold text-lg text-white mb-2">Real-Time Sync (&le;500ms)</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Redis Pub/Sub synchronizes seat capacity across Next.js Web, Flutter Mobile, and administrative portals.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-indigo-500/50 transition-colors">
-            <div className="p-3 bg-purple-600/20 rounded-lg w-fit text-purple-400 mb-4">
-              <Server className="h-6 w-6" />
-            </div>
-            <h3 className="font-semibold text-lg text-white mb-2">Headless RDS Worker</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              Redis BullMQ and automated workers execute high-concurrency enrollment batches into the legacy NSU RDS system.
-            </p>
-          </div>
-        </div>
-
-        {/* Monorepo Services Status */}
-        <div className="mt-12 p-6 rounded-2xl bg-slate-800/40 border border-slate-700/70">
-          <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Cpu className="h-5 w-5 text-indigo-400" /> Monorepo Services &amp; Pipeline Status
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-              <div>
-                <div className="text-sm font-medium text-slate-200">services/api</div>
-                <div className="text-xs text-slate-400">Node + Express + TS</div>
+          {/* Sign In Form */}
+          <form onSubmit={handleSignIn} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                {activeTab === 'student'
+                  ? '10-Digit NSU ID'
+                  : activeTab === 'faculty'
+                  ? 'Faculty Username'
+                  : 'Administrator UID'}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={nsuId}
+                  onChange={(e) => setNsuId(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-nsu-teal focus:bg-white transition-all"
+                  placeholder="2412159042"
+                />
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-              <div>
-                <div className="text-sm font-medium text-slate-200">services/rds-worker</div>
-                <div className="text-xs text-slate-400">Node + BullMQ + TS</div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Password</label>
+                <a href="#reset" className="text-xs text-nsu-teal hover:underline font-medium">
+                  Forgot?
+                </a>
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-nsu-teal focus:bg-white transition-all font-mono"
+                />
               </div>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-              <div>
-                <div className="text-sm font-medium text-slate-200">apps/web</div>
-                <div className="text-xs text-slate-400">Next.js App Router</div>
-              </div>
+
+            <div className="flex items-center justify-between text-xs pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded text-nsu-teal focus:ring-nsu-teal"
+                />
+                Remember on this device
+              </label>
+              <span className="flex items-center gap-1 text-slate-400 font-mono text-[11px]">
+                <Lock className="w-3 h-3 text-slate-400" />
+                256-bit SSL
+              </span>
             </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-slate-900/60 border border-slate-800">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-              <div>
-                <div className="text-sm font-medium text-slate-200">apps/mobile</div>
-                <div className="text-xs text-slate-400">Flutter Cross-Platform</div>
-              </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 px-4 rounded-xl bg-[#0F2942] hover:bg-[#0B3B59] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Sign in &rarr;</span>
+            </button>
+          </form>
+
+          {/* NSU Google Workspace SSO */}
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={() => handleSignIn({ preventDefault: () => {} } as any)}
+              className="w-full py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>NSU Google Workspace (@northsouth.edu)</span>
+            </button>
+          </div>
+
+          {/* 1-Click Fast Track Demo Links */}
+          <div className="mt-6 pt-5 border-t border-slate-100">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 text-center">
+              1-Click Fast Track Presentation Access:
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => quickDemoLogin('student', '/student/dashboard')}
+                className="py-1.5 px-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-semibold text-center transition-colors"
+              >
+                Rahim Ahmed
+              </button>
+              <button
+                type="button"
+                onClick={() => quickDemoLogin('faculty', '/faculty/exceptions')}
+                className="py-1.5 px-2 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 text-[11px] font-semibold text-center transition-colors"
+              >
+                Dr. Nova Ahmed
+              </button>
+              <button
+                type="button"
+                onClick={() => quickDemoLogin('admin', '/admin/health')}
+                className="py-1.5 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold text-center transition-colors"
+              >
+                IT Operations
+              </button>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-        <p>SmartAdvisor NSU &bull; CSE 327 Sec 04 (Spring 2026) &bull; North South University</p>
-      </footer>
-    </main>
+      </div>
+    </div>
   );
 }
