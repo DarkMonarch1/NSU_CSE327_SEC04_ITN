@@ -320,8 +320,9 @@ class MobileBottomSheets {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
+                        final messenger = ScaffoldMessenger.maybeOf(context);
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger?.showSnackBar(
                           const SnackBar(
                             content: Text('Suggested alternative 300-level electives displayed.'),
                             backgroundColor: AppTheme.navy,
@@ -346,6 +347,7 @@ class MobileBottomSheets {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
+                        final messenger = ScaffoldMessenger.maybeOf(context);
                         appState?.addPetition(
                           const PetitionItem(
                             id: 'PET-425-NEW',
@@ -357,7 +359,7 @@ class MobileBottomSheets {
                           ),
                         );
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger?.showSnackBar(
                           const SnackBar(
                             content: Text('Standing Exception logged with Dr. Nova Ahmed.'),
                             backgroundColor: AppTheme.emeraldDark,

@@ -384,6 +384,7 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
+                  final messenger = ScaffoldMessenger.maybeOf(context);
                   final sec = course.sections.first;
                   widget.appState.addStagedCourse(
                     StagedCourse(
@@ -396,7 +397,7 @@ class _CourseCatalogScreenState extends State<CourseCatalogScreen> {
                       credits: course.credits,
                     ),
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger?.showSnackBar(
                     SnackBar(
                       content: Text('${sec.courseCode} Sec ${sec.sectionNumber} staged!'),
                       backgroundColor: AppTheme.emeraldDark,

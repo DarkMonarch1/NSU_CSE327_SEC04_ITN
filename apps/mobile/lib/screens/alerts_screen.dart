@@ -276,12 +276,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
+                      final messenger = ScaffoldMessenger.maybeOf(context);
                       if (alert.type == 'seat_drop') {
                         widget.appState.setTab(1); // Go to schedule
                       } else if (alert.type == 'rule_alert') {
                         widget.appState.setTab(2); // Go to prereqs
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger?.showSnackBar(
                         SnackBar(
                           content: Text('Action executed: ${alert.actionLabel}'),
                           backgroundColor: AppTheme.navy,

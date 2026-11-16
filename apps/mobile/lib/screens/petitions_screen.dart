@@ -169,7 +169,7 @@ class _PetitionsScreenState extends State<PetitionsScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
                           color: statusBg,
                           borderRadius: BorderRadius.circular(6),
@@ -179,12 +179,16 @@ class _PetitionsScreenState extends State<PetitionsScreen> {
                           children: [
                             Icon(statusIcon, color: statusColor, size: 12),
                             const SizedBox(width: 4),
-                            Text(
-                              statusText,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: statusColor,
+                            Flexible(
+                              child: Text(
+                                statusText,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: statusColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

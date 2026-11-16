@@ -198,6 +198,7 @@ class HomeDashboardScreen extends StatelessWidget {
             seatsAvailable: 12,
             isStaged: appState.stagedCourses.any((c) => c.courseCode == 'CSE 327'),
             onQuickAdd: () {
+              final messenger = ScaffoldMessenger.maybeOf(context);
               appState.addStagedCourse(
                 const StagedCourse(
                   courseCode: 'CSE 327',
@@ -209,7 +210,7 @@ class HomeDashboardScreen extends StatelessWidget {
                   credits: 3.0,
                 ),
               );
-              ScaffoldMessenger.of(context).showSnackBar(
+              messenger?.showSnackBar(
                 const SnackBar(
                   content: Text('CSE 327 Sec 01 staged in advising cart!'),
                   backgroundColor: AppTheme.emeraldDark,
@@ -229,6 +230,7 @@ class HomeDashboardScreen extends StatelessWidget {
             seatsAvailable: 22,
             isStaged: appState.stagedCourses.any((c) => c.courseCode == 'MAT 361'),
             onQuickAdd: () {
+              final messenger = ScaffoldMessenger.maybeOf(context);
               appState.addStagedCourse(
                 const StagedCourse(
                   courseCode: 'MAT 361',
@@ -240,7 +242,7 @@ class HomeDashboardScreen extends StatelessWidget {
                   credits: 3.0,
                 ),
               );
-              ScaffoldMessenger.of(context).showSnackBar(
+              messenger?.showSnackBar(
                 const SnackBar(
                   content: Text('MAT 361 Sec 04 staged in advising cart!'),
                   backgroundColor: AppTheme.emeraldDark,
