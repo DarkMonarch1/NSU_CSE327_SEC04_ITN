@@ -23,6 +23,23 @@ describe('SmartAdvisor RDS Worker Processing', () => {
     expect(result.enrolledAt).toBeDefined();
   });
 
+  it('should return deterministic transactionId and digitalSignature for identical payloads', async () => {
+    const payload = {
+      studentId: '21200000',
+      courseCode: 'CSE327',
+      section: 4,
+      semester: 'Spring 2026'
+    };
+
+    const result1 = await processRdsEnrollment(payload);
+    const result2 = await processRdsEnrollment(payload);
+
+    expect(result1.transactionId.startsWith('#RDS-TXN-')).toBe(true);
+    expect(result1.digitalSignature.startsWith('SHA256:')).toBe(true);
+    expect(result1.transactionId).toBe(result2.transactionId);
+    expect(result1.digitalSignature).toBe(result2.digitalSignature);
+  });
+
   it('should throw an error when missing required payload fields', async () => {
     const invalidPayload = {
       studentId: '',
