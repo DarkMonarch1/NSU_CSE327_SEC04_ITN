@@ -4,7 +4,7 @@ import { app } from './app';
 import { backendStore } from './store/backendStore';
 import { checkCreditFloor, detectScheduleClashes } from './services/ruleValidator';
 import { INITIAL_STUDENT, INITIAL_SECTIONS } from './seedData';
-import { CourseSection } from './types';
+import { CourseSection, ExceptionCase, BypassRule } from './types';
 
 describe('SmartAdvisor API Health Check', () => {
   it('GET /health should return 200 and ok status', async () => {
@@ -142,5 +142,76 @@ describe('Student Portal Advising & ACID Enrollment Routes', () => {
 
     const cse327After = res.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-01')!;
     expect(cse327After.enrolled).toBe(cse327Before.enrolled + 1);
+  });
+});
+
+describe('Faculty Portal Exception & Rule Routes', () => {
+  beforeEach(() => {
+    backendStore.resetState();
+  });
+
+  it('POST /api/v1/faculty/exceptions/decision approving "CASE #EX-2025-0841" sets status to "approved" and increments CSE425-01 capacity and enrolled count', async () => {
+    const preState = backendStore.getState();
+    const cse425Before = preState.sections.find((s) => s.id === 'CSE425-01')!;
+
+    const res = await request(app)
+      .post('/api/v1/faculty/exceptions/decision')
+      .send({ caseId: 'CASE #EX-2025-0841', action: 'approve' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const updatedCase = res.body.state.exceptions.find((e: ExceptionCase) => e.id === 'CASE #EX-2025-0841');
+    expect(updatedCase?.status).toBe('approved');
+    expect(updatedCase?.facultyDecisionBy).toBe('Dr. Nova Ahmed');
+
+    const cse425After = res.body.state.sections.find((s: CourseSection) => s.id === 'CSE425-01')!;
+    expect(cse425After.capacity).toBe(cse425Before.capacity + 1);
+    expect(cse425After.enrolled).toBe(cse425Before.enrolled + 1);
+  });
+
+  it('POST /api/v1/faculty/exceptions/decision rejecting "CASE #EX-2025-0839" sets status to "rejected"', async () => {
+    const res = await request(app)
+      .post('/api/v1/faculty/exceptions/decision')
+      .send({ caseId: 'CASE #EX-2025-0839', action: 'reject' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const updatedCase = res.body.state.exceptions.find((e: ExceptionCase) => e.id === 'CASE #EX-2025-0839');
+    expect(updatedCase?.status).toBe('rejected');
+    expect(updatedCase?.facultyDecisionBy).toBe('Dr. Nova Ahmed');
+  });
+
+  it('POST /api/v1/faculty/sections/expand-capacity with { sectionId: "CSE327-01", delta: 10 } increases capacity from 40 to 50', async () => {
+    const preState = backendStore.getState();
+    const secBefore = preState.sections.find((s) => s.id === 'CSE327-01')!;
+    expect(secBefore.capacity).toBe(40);
+
+    const res = await request(app)
+      .post('/api/v1/faculty/sections/expand-capacity')
+      .send({ sectionId: 'CSE327-01', delta: 10 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const secAfter = res.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-01')!;
+    expect(secAfter.capacity).toBe(50);
+  });
+
+  it('POST /api/v1/faculty/rules/toggle with { ruleId: "rule-6-3" } toggles enabled from false to true', async () => {
+    const preState = backendStore.getState();
+    const ruleBefore = preState.bypassRules.find((r) => r.id === 'rule-6-3')!;
+    expect(ruleBefore.enabled).toBe(false);
+
+    const res = await request(app)
+      .post('/api/v1/faculty/rules/toggle')
+      .send({ ruleId: 'rule-6-3' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const ruleAfter = res.body.state.bypassRules.find((r: BypassRule) => r.id === 'rule-6-3')!;
+    expect(ruleAfter?.enabled).toBe(true);
   });
 });
