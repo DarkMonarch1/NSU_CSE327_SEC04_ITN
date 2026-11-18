@@ -96,3 +96,97 @@ facultyRouter.post('/exceptions/decision', (req: Request, res: Response) => {
     state: backendStore.getState()
   });
 });
+
+/**
+ * POST /api/v1/faculty/sections/expand-capacity
+ * Body: { sectionId: string; delta: number }
+ *
+ * Expands section capacity by delta and logs the modification.
+ */
+facultyRouter.post('/sections/expand-capacity', (req: Request, res: Response) => {
+  const { sectionId, delta } = req.body || {};
+
+  const state = backendStore.getState();
+  const targetSection = state.sections.find((s) => s.id === sectionId);
+
+  if (!targetSection) {
+    return res.status(404).json({
+      ok: false,
+      message: 'Section not found'
+    });
+  }
+
+  const numericDelta = Number(delta) || 0;
+  const targetCourse = `${targetSection.courseCode} Sec ${targetSection.sectionNumber}`;
+
+  backendStore.updateState((s) => {
+    s.sections = s.sections.map((sec) => {
+      if (sec.id === sectionId) {
+        return {
+          ...sec,
+          capacity: sec.capacity + numericDelta
+        };
+      }
+      return sec;
+    });
+  });
+
+  backendStore.addAuditLog(
+    'Dr. Nova Ahmed (Faculty)',
+    'Capacity Expanded',
+    `Expanded ${targetCourse} capacity by +${numericDelta} seats (Safe room cap: 55).`,
+    'emerald'
+  );
+
+  return res.status(200).json({
+    ok: true,
+    state: backendStore.getState()
+  });
+});
+
+/**
+ * POST /api/v1/faculty/rules/toggle
+ * Body: { ruleId: string }
+ *
+ * Toggles a senate bypass rule on/off and logs the activation or suspension.
+ */
+facultyRouter.post('/rules/toggle', (req: Request, res: Response) => {
+  const { ruleId } = req.body || {};
+
+  const state = backendStore.getState();
+  const targetRule = state.bypassRules.find((r) => r.id === ruleId);
+
+  if (!targetRule) {
+    return res.status(404).json({
+      ok: false,
+      message: 'Rule not found'
+    });
+  }
+
+  const isNowEnabled = !targetRule.enabled;
+  const ruleTitle = targetRule.title;
+
+  backendStore.updateState((s) => {
+    s.bypassRules = s.bypassRules.map((r) => {
+      if (r.id === ruleId) {
+        return {
+          ...r,
+          enabled: isNowEnabled
+        };
+      }
+      return r;
+    });
+  });
+
+  backendStore.addAuditLog(
+    'Faculty Executive Committee',
+    isNowEnabled ? 'Rule Activated' : 'Rule Suspended',
+    `${ruleTitle} was ${isNowEnabled ? 'enabled' : 'suspended'}.`,
+    isNowEnabled ? 'emerald' : 'amber'
+  );
+
+  return res.status(200).json({
+    ok: true,
+    state: backendStore.getState()
+  });
+});
