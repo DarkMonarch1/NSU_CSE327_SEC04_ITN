@@ -1,10 +1,13 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import { bootstrapRouter } from './routes/bootstrap';
 
 export const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/v1', bootstrapRouter);
 
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
