@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { backendStore } from '../store/backendStore';
 import { checkCreditFloor } from '../services/ruleValidator';
+import { CourseSection, ScheduleReceipt } from '../types';
 
 export const studentRouter = Router();
 
@@ -116,6 +118,73 @@ studentRouter.delete('/cart/:sectionId', (req: Request, res: Response) => {
 
   return res.status(200).json({
     ok: true,
+    state: backendStore.getState()
+  });
+});
+
+/**
+ * POST /api/v1/student/enroll/confirm
+ *
+ * Confirms the student's staged schedule, atomically increments enrolled seat counts,
+ * computes deterministic SHA-256 digital signature, stores official ScheduleReceipt,
+ * and logs the lock action.
+ */
+studentRouter.post('/enroll/confirm', (_req: Request, res: Response) => {
+  const state = backendStore.getState();
+  const student = state.student;
+  const stagedSectionIds = state.stagedSectionIds;
+
+  const hashPayload = `${student.id}:${student.cartToken}:${stagedSectionIds.join(',')}`;
+  const hashHex = crypto.createHash('sha256').update(hashPayload).digest('hex');
+  const digitalSignature = `SHA256:${hashHex}`;
+
+  const randomFiveDigit = Math.floor(10000 + Math.random() * 90000);
+  const transactionId = `#RDS-TXN-2025-${randomFiveDigit}`;
+
+  let stagedSections: CourseSection[] = [];
+  let totalCredits = 0;
+  let receipt: ScheduleReceipt;
+
+  backendStore.updateState((s) => {
+    s.sections = s.sections.map((sec) => {
+      if (s.stagedSectionIds.includes(sec.id)) {
+        return {
+          ...sec,
+          enrolled: Math.min(sec.capacity, sec.enrolled + 1)
+        };
+      }
+      return sec;
+    });
+
+    stagedSections = s.stagedSectionIds
+      .map((id) => s.sections.find((sec) => sec.id === id))
+      .filter((sec): sec is CourseSection => Boolean(sec));
+
+    totalCredits = stagedSections.reduce((acc, curr) => acc + curr.credits, 0);
+
+    receipt = {
+      transactionId,
+      studentId: student.id,
+      cartToken: student.cartToken,
+      timestamp: new Date().toLocaleString(),
+      totalCredits,
+      sections: stagedSections,
+      digitalSignature
+    };
+
+    s.receipt = receipt;
+  });
+
+  backendStore.addAuditLog(
+    student.name,
+    'RDS Enrollment Locked',
+    `Schedule locked with ${totalCredits} Cr. Generated ${receipt!.transactionId}`,
+    'emerald'
+  );
+
+  return res.status(200).json({
+    ok: true,
+    receipt: receipt!,
     state: backendStore.getState()
   });
 });
