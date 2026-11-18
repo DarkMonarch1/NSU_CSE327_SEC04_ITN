@@ -89,3 +89,33 @@ studentRouter.post('/cart/stage', (req: Request, res: Response) => {
     state: backendStore.getState()
   });
 });
+
+/**
+ * DELETE /api/v1/student/cart/:sectionId
+ *
+ * Removes a course section from the student's staged cart and records an audit log.
+ */
+studentRouter.delete('/cart/:sectionId', (req: Request, res: Response) => {
+  const { sectionId } = req.params;
+
+  const state = backendStore.getState();
+  const targetSection = state.sections.find((s) => s.id === sectionId);
+
+  // Remove sectionId from stagedSectionIds
+  backendStore.updateState((s) => {
+    s.stagedSectionIds = s.stagedSectionIds.filter((id) => id !== sectionId);
+  });
+
+  // Prepend amber audit log
+  backendStore.addAuditLog(
+    state.student.name,
+    'Section Removed',
+    `Removed ${targetSection?.courseCode || sectionId} from draft plan.`,
+    'amber'
+  );
+
+  return res.status(200).json({
+    ok: true,
+    state: backendStore.getState()
+  });
+});
