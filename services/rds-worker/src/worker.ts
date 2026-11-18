@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { Worker, Job } from 'bullmq';
 
 export interface RdsEnrollmentPayload {
@@ -13,6 +14,8 @@ export interface RdsEnrollmentResult {
   courseCode: string;
   enrolledAt: string;
   message: string;
+  transactionId: string;
+  digitalSignature: string;
 }
 
 export const RDS_QUEUE_NAME = 'rds-enrollment-queue';
@@ -24,12 +27,19 @@ export async function processRdsEnrollment(
     throw new Error('Invalid enrollment payload: studentId, courseCode, and section are required');
   }
 
+  const hash = crypto
+    .createHash('sha256')
+    .update(`${jobData.studentId}:${jobData.courseCode}:${jobData.section}:${jobData.semester}`)
+    .digest('hex');
+
   return {
     success: true,
     studentId: jobData.studentId,
     courseCode: jobData.courseCode,
     enrolledAt: new Date().toISOString(),
-    message: `Successfully processed enrollment for ${jobData.studentId} in ${jobData.courseCode} Sec ${jobData.section}`
+    message: `Successfully processed enrollment for ${jobData.studentId} in ${jobData.courseCode} Sec ${jobData.section}`,
+    transactionId: '#RDS-TXN-' + hash.slice(0, 8).toUpperCase(),
+    digitalSignature: 'SHA256:' + hash
   };
 }
 
