@@ -461,6 +461,15 @@ const SmartAdvisorContext = createContext<SmartAdvisorContextType | null>(null);
 
 const STORAGE_KEY = 'smartadvisor_store_v1';
 const SYNC_CHANNEL = 'smartadvisor-sync';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
+function syncApi(path: string, options?: RequestInit) {
+  if (typeof window === 'undefined') return Promise.resolve(null);
+  return fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options
+  }).catch(() => null);
+}
 
 export function SmartAdvisorProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<UserRole>('student');
@@ -503,26 +512,60 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  // Load from localStorage or sync channel
+  // Load from localStorage or sync channel & connect to live backend API / SSE stream
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    const applyIncomingState = (s: any) => {
+      if (!s) return;
+      if (s.sections) setSections(s.sections);
+      if (s.stagedSectionIds) setStagedSectionIds(s.stagedSectionIds);
+      if (s.exceptions) setExceptions(s.exceptions);
+      if (s.bypassRules) setBypassRules(s.bypassRules);
+      if (s.auditLog) setAuditLog(s.auditLog);
+      if (s.metrics) setMetrics(s.metrics);
+      if (s.escalations) setEscalations(s.escalations);
+      if (s.student) setStudent(s.student);
+      if (s.receipt !== undefined) setReceipt(s.receipt);
+    };
 
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.sections) setSections(parsed.sections);
-        if (parsed.stagedSectionIds) setStagedSectionIds(parsed.stagedSectionIds);
-        if (parsed.exceptions) setExceptions(parsed.exceptions);
-        if (parsed.bypassRules) setBypassRules(parsed.bypassRules);
-        if (parsed.auditLog) setAuditLog(parsed.auditLog);
-        if (parsed.metrics) setMetrics(parsed.metrics);
-        if (parsed.escalations) setEscalations(parsed.escalations);
-        if (parsed.student) setStudent(parsed.student);
-        if (parsed.receipt) setReceipt(parsed.receipt);
+        applyIncomingState(parsed);
       }
     } catch (e) {
       console.warn('Failed to load initial state:', e);
+    }
+
+    // Fetch bootstrap state from backend API if available
+    fetch(`${API_BASE}/bootstrap`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          applyIncomingState(data);
+        }
+      })
+      .catch(() => null);
+
+    let eventSource: EventSource | null = null;
+    if (typeof EventSource !== 'undefined') {
+      try {
+        eventSource = new EventSource(`${API_BASE}/events`);
+        eventSource.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data?.type === 'SYNC_UPDATE' && data?.state) {
+              applyIncomingState(data.state);
+            }
+          } catch {
+            // Ignore non-json or SSE ping comments
+          }
+        };
+      } catch (err) {
+        console.warn('Failed to initialize EventSource:', err);
+      }
     }
 
     let channel: BroadcastChannel | null = null;
@@ -530,16 +573,7 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       channel = new BroadcastChannel(SYNC_CHANNEL);
       channel.onmessage = (event) => {
         if (event.data?.type === 'SYNC_UPDATE' && event.data?.state) {
-          const s = event.data.state;
-          if (s.sections) setSections(s.sections);
-          if (s.stagedSectionIds) setStagedSectionIds(s.stagedSectionIds);
-          if (s.exceptions) setExceptions(s.exceptions);
-          if (s.bypassRules) setBypassRules(s.bypassRules);
-          if (s.auditLog) setAuditLog(s.auditLog);
-          if (s.metrics) setMetrics(s.metrics);
-          if (s.escalations) setEscalations(s.escalations);
-          if (s.student) setStudent(s.student);
-          if (s.receipt) setReceipt(s.receipt);
+          applyIncomingState(event.data.state);
         }
       };
     }
@@ -548,16 +582,8 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       if (e.key === STORAGE_KEY && e.newValue) {
         try {
           const s = JSON.parse(e.newValue);
-          if (s.sections) setSections(s.sections);
-          if (s.stagedSectionIds) setStagedSectionIds(s.stagedSectionIds);
-          if (s.exceptions) setExceptions(s.exceptions);
-          if (s.bypassRules) setBypassRules(s.bypassRules);
-          if (s.auditLog) setAuditLog(s.auditLog);
-          if (s.metrics) setMetrics(s.metrics);
-          if (s.escalations) setEscalations(s.escalations);
-          if (s.student) setStudent(s.student);
-          if (s.receipt) setReceipt(s.receipt);
-        } catch (err) {
+          applyIncomingState(s);
+        } catch {
           // ignore
         }
       }
@@ -567,6 +593,7 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
 
     return () => {
       if (channel) channel.close();
+      if (eventSource) eventSource.close();
       window.removeEventListener('storage', handleStorage);
     };
   }, []);
@@ -696,6 +723,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       receipt
     });
 
+    syncApi('/student/cart/stage', {
+      method: 'POST',
+      body: JSON.stringify({ sectionId })
+    });
+
     return true;
   }, [sections, stagedSectionIds, student, openModal, auditLog, bypassRules, escalations, exceptions, metrics, receipt, broadcastState]);
 
@@ -726,6 +758,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt
+    });
+
+    syncApi(`/student/cart/${sectionId}`, {
+      method: 'DELETE'
     });
   }, [stagedSectionIds, sections, student, auditLog, bypassRules, escalations, exceptions, metrics, receipt, broadcastState]);
 
@@ -777,6 +813,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt: newReceipt
+    });
+
+    syncApi('/student/enroll/confirm', {
+      method: 'POST'
     });
 
     return newReceipt;
@@ -835,6 +875,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/faculty/exceptions/decision', {
+      method: 'POST',
+      body: JSON.stringify({ caseId, action: 'approve' })
+    });
   }, [exceptions, sections, stagedSectionIds, bypassRules, auditLog, metrics, escalations, student, receipt, broadcastState]);
 
   // Faculty: Reject exception
@@ -873,6 +918,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt
+    });
+
+    syncApi('/faculty/exceptions/decision', {
+      method: 'POST',
+      body: JSON.stringify({ caseId, action: 'reject' })
     });
   }, [exceptions, sections, stagedSectionIds, bypassRules, auditLog, metrics, escalations, student, receipt, broadcastState]);
 
@@ -913,6 +963,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/faculty/exceptions/decision', {
+      method: 'POST',
+      body: JSON.stringify({ caseId, action: 'flag' })
+    });
   }, [exceptions, sections, stagedSectionIds, bypassRules, auditLog, metrics, escalations, student, receipt, broadcastState]);
 
   // Faculty: Expand Capacity modal action
@@ -952,6 +1007,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt
+    });
+
+    syncApi('/faculty/sections/expand-capacity', {
+      method: 'POST',
+      body: JSON.stringify({ sectionId, delta })
     });
   }, [sections, stagedSectionIds, exceptions, bypassRules, auditLog, metrics, escalations, student, receipt, closeModal, broadcastState]);
 
@@ -995,6 +1055,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/faculty/rules/toggle', {
+      method: 'POST',
+      body: JSON.stringify({ ruleId })
+    });
   }, [bypassRules, sections, stagedSectionIds, exceptions, auditLog, metrics, escalations, student, receipt, broadcastState]);
 
   // Admin: Auto-scale API nodes (+2)
@@ -1032,6 +1097,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/admin/scale', {
+      method: 'POST'
+    });
   }, [metrics, sections, stagedSectionIds, exceptions, bypassRules, auditLog, escalations, student, receipt, broadcastState]);
 
   // Admin: Acknowledge incident
@@ -1052,6 +1121,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt
+    });
+
+    syncApi('/admin/acknowledge', {
+      method: 'POST'
     });
   }, [metrics, sections, stagedSectionIds, exceptions, bypassRules, auditLog, escalations, student, receipt, broadcastState]);
 
@@ -1114,6 +1187,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/admin/sections/emergency', {
+      method: 'POST',
+      body: JSON.stringify({ courseCode, sectionData })
+    });
   }, [sections, escalations, stagedSectionIds, exceptions, bypassRules, auditLog, metrics, student, receipt, closeModal, broadcastState]);
 
   // Admin: Add seats to all sections
@@ -1164,6 +1242,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/admin/courses/add-seats', {
+      method: 'POST',
+      body: JSON.stringify({ courseCode, count })
+    });
   }, [sections, escalations, stagedSectionIds, exceptions, bypassRules, auditLog, metrics, student, receipt, broadcastState]);
 
   // Demo Control: Simulate Surge Spike
@@ -1199,6 +1282,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       escalations,
       student,
       receipt
+    });
+
+    syncApi('/demo/surge', {
+      method: 'POST'
     });
   }, [metrics, sections, stagedSectionIds, exceptions, bypassRules, auditLog, escalations, student, receipt, broadcastState]);
 
@@ -1238,6 +1325,11 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
       student,
       receipt
     });
+
+    syncApi('/demo/section-full', {
+      method: 'POST',
+      body: JSON.stringify({ sectionId })
+    });
   }, [sections, stagedSectionIds, exceptions, bypassRules, auditLog, metrics, escalations, student, receipt, broadcastState]);
 
   // Demo Control: Reset State
@@ -1271,6 +1363,10 @@ export function SmartAdvisorProvider({ children }: { children: React.ReactNode }
         bc.close();
       }
     }
+
+    syncApi('/demo/reset', {
+      method: 'POST'
+    });
   }, [closeModal]);
 
   const value = {
