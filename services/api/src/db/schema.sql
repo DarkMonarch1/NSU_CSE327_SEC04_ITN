@@ -72,3 +72,109 @@ CREATE INDEX IF NOT EXISTS idx_course_sections_course_code ON course_sections(co
 CREATE INDEX IF NOT EXISTS idx_course_sections_department ON course_sections(department);
 CREATE INDEX IF NOT EXISTS idx_staged_sections_student_id ON staged_sections(student_id);
 CREATE INDEX IF NOT EXISTS idx_staged_sections_section_id ON staged_sections(section_id);
+
+-- ============================================================================
+-- Faculty and Admin Portals Domain
+-- Tables: exception_cases, bypass_rules, audit_logs, admin_metrics, escalations, schedule_receipts
+-- ============================================================================
+
+-- Table: exception_cases (mirrors ExceptionCase interface)
+CREATE TABLE IF NOT EXISTS exception_cases (
+    id VARCHAR(64) PRIMARY KEY,
+    student_id VARCHAR(64) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    student_name VARCHAR(255) NOT NULL,
+    program VARCHAR(255) NOT NULL,
+    standing VARCHAR(64) NOT NULL,
+    cgpa NUMERIC(3, 2) NOT NULL,
+    credits_completed NUMERIC(5, 2) NOT NULL,
+    course_code VARCHAR(32) NOT NULL,
+    course_title VARCHAR(255) NOT NULL,
+    section_number VARCHAR(16) NOT NULL,
+    category VARCHAR(32) NOT NULL CHECK (category IN ('Prereqs', 'Capacity', 'Credit Standing')),
+    submitted_at VARCHAR(64) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'flagged')),
+    statement TEXT NOT NULL,
+    audit_checks JSONB NOT NULL DEFAULT '[]'::jsonb,
+    faculty_decision_by VARCHAR(255) DEFAULT NULL,
+    faculty_decision_at VARCHAR(64) DEFAULT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: bypass_rules (mirrors BypassRule interface)
+CREATE TABLE IF NOT EXISTS bypass_rules (
+    id VARCHAR(64) PRIMARY KEY,
+    code VARCHAR(32) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(32) NOT NULL CHECK (category IN ('Standing', 'Prerequisite', 'Exam Load', 'Capacity')),
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    last_updated VARCHAR(64) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: audit_logs (mirrors AuditLogItem interface)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id VARCHAR(64) PRIMARY KEY,
+    timestamp VARCHAR(64) NOT NULL,
+    actor VARCHAR(255) NOT NULL,
+    action VARCHAR(255) NOT NULL,
+    details TEXT NOT NULL,
+    badge_type VARCHAR(32) NOT NULL CHECK (badge_type IN ('emerald', 'amber', 'crimson', 'teal')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: admin_metrics (mirrors AdminMetrics interface)
+CREATE TABLE IF NOT EXISTS admin_metrics (
+    id BIGSERIAL PRIMARY KEY,
+    requests_per_sec INTEGER NOT NULL DEFAULT 0,
+    p95_latency_ms NUMERIC(7, 2) NOT NULL DEFAULT 0.00,
+    sla_ceiling_ms NUMERIC(7, 2) NOT NULL DEFAULT 200.00,
+    error_rate NUMERIC(5, 4) NOT NULL DEFAULT 0.0000,
+    pool_used INTEGER NOT NULL DEFAULT 0,
+    pool_total INTEGER NOT NULL DEFAULT 200,
+    api_nodes INTEGER NOT NULL DEFAULT 1,
+    surge_spike_active BOOLEAN NOT NULL DEFAULT FALSE,
+    last_scaling_event VARCHAR(255) DEFAULT NULL,
+    recorded_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: escalations (mirrors EscalationItem interface)
+CREATE TABLE IF NOT EXISTS escalations (
+    id VARCHAR(64) PRIMARY KEY,
+    course_code VARCHAR(32) NOT NULL,
+    course_title VARCHAR(255) NOT NULL,
+    enrolled INTEGER NOT NULL DEFAULT 0,
+    total_capacity INTEGER NOT NULL DEFAULT 0,
+    waitlisted INTEGER NOT NULL DEFAULT 0,
+    deficit INTEGER NOT NULL DEFAULT 0,
+    severity VARCHAR(16) NOT NULL CHECK (severity IN ('SEV-1', 'SEV-2', 'SEV-3')),
+    status VARCHAR(32) NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'Mitigated', 'Resolved')),
+    demand_surge JSONB NOT NULL DEFAULT '[]'::jsonb,
+    breakdown JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: schedule_receipts (mirrors ScheduleReceipt interface)
+CREATE TABLE IF NOT EXISTS schedule_receipts (
+    transaction_id VARCHAR(64) PRIMARY KEY,
+    student_id VARCHAR(64) NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    cart_token VARCHAR(64) NOT NULL,
+    timestamp VARCHAR(64) NOT NULL,
+    total_credits NUMERIC(4, 1) NOT NULL,
+    sections JSONB NOT NULL DEFAULT '[]'::jsonb,
+    digital_signature VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for Faculty and Admin portals
+CREATE INDEX IF NOT EXISTS idx_exception_cases_student_id ON exception_cases(student_id);
+CREATE INDEX IF NOT EXISTS idx_exception_cases_status ON exception_cases(status);
+CREATE INDEX IF NOT EXISTS idx_bypass_rules_code ON bypass_rules(code);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_escalations_course_code ON escalations(course_code);
+CREATE INDEX IF NOT EXISTS idx_escalations_status ON escalations(status);
+CREATE INDEX IF NOT EXISTS idx_schedule_receipts_student_id ON schedule_receipts(student_id);
