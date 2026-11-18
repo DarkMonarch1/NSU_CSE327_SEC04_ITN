@@ -4,7 +4,7 @@ import { app } from './app';
 import { backendStore } from './store/backendStore';
 import { checkCreditFloor, detectScheduleClashes } from './services/ruleValidator';
 import { INITIAL_STUDENT, INITIAL_SECTIONS } from './seedData';
-import { CourseSection, ExceptionCase, BypassRule } from './types';
+import { CourseSection, ExceptionCase, BypassRule, EscalationItem } from './types';
 
 describe('SmartAdvisor API Health Check', () => {
   it('GET /health should return 200 and ok status', async () => {
@@ -213,5 +213,97 @@ describe('Faculty Portal Exception & Rule Routes', () => {
 
     const ruleAfter = res.body.state.bypassRules.find((r: BypassRule) => r.id === 'rule-6-3')!;
     expect(ruleAfter?.enabled).toBe(true);
+  });
+});
+
+describe('Admin Operations & Classroom Demo Routes', () => {
+  beforeEach(() => {
+    backendStore.resetState();
+  });
+
+  it('POST /api/v1/demo/surge sets surgeSpikeActive: true and p95LatencyMs: 275', async () => {
+    const res = await request(app).post('/api/v1/demo/surge');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.state.metrics.surgeSpikeActive).toBe(true);
+    expect(res.body.state.metrics.p95LatencyMs).toBe(275);
+    expect(res.body.state.metrics.requestsPerSec).toBe(3450);
+  });
+
+  it('POST /api/v1/admin/scale increments apiNodes from 6 to 8 and drops p95LatencyMs to 138', async () => {
+    expect(backendStore.getState().metrics.apiNodes).toBe(6);
+
+    const res = await request(app).post('/api/v1/admin/scale');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.state.metrics.apiNodes).toBe(8);
+    expect(res.body.state.metrics.p95LatencyMs).toBe(138);
+  });
+
+  it('POST /api/v1/admin/acknowledge sets surgeSpikeActive: false', async () => {
+    await request(app).post('/api/v1/demo/surge');
+    expect(backendStore.getState().metrics.surgeSpikeActive).toBe(true);
+
+    const res = await request(app).post('/api/v1/admin/acknowledge');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.state.metrics.surgeSpikeActive).toBe(false);
+  });
+
+  it('POST /api/v1/admin/sections/emergency with { courseCode: "CSE 327" } creates CSE327-05 and sets escalation status to "Mitigated"', async () => {
+    const res = await request(app)
+      .post('/api/v1/admin/sections/emergency')
+      .send({ courseCode: 'CSE 327' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const createdSec = res.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-05');
+    expect(createdSec).toBeDefined();
+    expect(createdSec.courseCode).toBe('CSE 327');
+    expect(createdSec.sectionNumber).toBe('05');
+    expect(createdSec.capacity).toBe(40);
+    expect(createdSec.enrolled).toBe(0);
+
+    const esc = res.body.state.escalations.find((e: EscalationItem) => e.courseCode === 'CSE 327');
+    expect(esc).toBeDefined();
+    expect(esc.status).toBe('Mitigated');
+  });
+
+  it('POST /api/v1/admin/courses/add-seats with { courseCode: "CSE 425", count: 10 } resolves the CSE 425 escalation', async () => {
+    const res = await request(app)
+      .post('/api/v1/admin/courses/add-seats')
+      .send({ courseCode: 'CSE 425', count: 10 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+
+    const esc = res.body.state.escalations.find((e: EscalationItem) => e.courseCode === 'CSE 425');
+    expect(esc).toBeDefined();
+    expect(esc.status).toBe('Resolved');
+  });
+
+  it('POST /api/v1/demo/section-full with { sectionId: "CSE327-01" } sets enrolled === capacity, and POST /api/v1/demo/reset restores CSE327-01 back to 28 enrolled', async () => {
+    const resFull = await request(app)
+      .post('/api/v1/demo/section-full')
+      .send({ sectionId: 'CSE327-01' });
+
+    expect(resFull.status).toBe(200);
+    expect(resFull.body.ok).toBe(true);
+
+    const secFull = resFull.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-01');
+    expect(secFull.enrolled).toBe(secFull.capacity);
+
+    const resReset = await request(app).post('/api/v1/demo/reset');
+
+    expect(resReset.status).toBe(200);
+    expect(resReset.body.ok).toBe(true);
+
+    const secReset = resReset.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-01');
+    expect(secReset.enrolled).toBe(28);
+    expect(secReset.capacity).toBe(40);
   });
 });
