@@ -85,32 +85,60 @@ flowchart TD
 
 ## 3. Feature Breakdown by Platform & Role
 
-### 🎓 Student Web Portal (`/student/dashboard`, `/student/schedule`)
-- **Interactive Section Staging**: Stage, swap, or drop theory and lab sections with live seat counters and instantaneous visual feedback.
-- **Real-Time Timetable Clash Detection**: Instant matrix analysis preventing conflicts across North South University standard day pairings (`ST`, `MW`, `RA`, and `Thu`).
-- **Rule 4.2 Standing Floor Warnings**: Unlocks modal explanations and advisor routing whenever students below 100 credits attempt 400-level registrations.
-- **Intelligent Full-Seat Alternatives**: Automatically surfaces open alternative sections for the same course code when a target section is filled.
-- **Atomic Schedule Lock & Cryptographic Receipt**: Locks student schedule inside an ACID transaction and emits an official digital receipt with transaction ID (`#RDS-TXN-2025-XXXXX`) and cryptographic SHA-256 signature.
+### 🎓 Student Web Portal (`apps/web` — `/student/dashboard`, `/student/schedule`)
 
-### 👩‍🏫 Faculty Web Portal (`/faculty/exceptions`, `/faculty/courses`, `/faculty/rules`)
-- **6-Point Automated Rule Audit Checklist**: Automatically audits student CGPA, prerequisite clearance, degree credits, graduation horizon, seat availability, and financial clearance.
-- **1-Click Decision Workflow**: Actionable `Approve`, `Reject`, or `Flag for In-Person Advising` buttons for pending exception cases (e.g., `#EX-2025-0841`).
-- **Physical Room Capacity Expansion**: Allows authorized faculty advisors to expand capacity (`+1` to `+15` seats) within certified fire-code room limits (e.g., `LIB 602` max 55).
-- **Senate Bypass Rule Toggles**: Live toggling of institutional academic council policies (`RULE-4.2`, `RULE-2.1`, `RULE-6.3`, `RULE-8.4`) with immediate effect across the scheduling engine.
+The Student Web Portal provides an interactive advising workflow, real-time conflict checking, prerequisite enforcement, and atomic schedule finalization.
 
-### ⚙️ Admin Operations Portal (`/admin/health`, `/admin/escalations`)
-- **Real-Time Telemetry & SLA Ceilings**: Tracks requests/sec, p95 latency against the 200 ms SLA ceiling, database connection pool utilization, and error rates.
-- **Cluster Auto-Scaling Simulation**: Triggers `+2 Node` auto-scaling, immediately dropping latency from elevated levels ($>200\text{ ms}$) back to steady-state ($138\text{ ms}$).
-- **SEV-1 Bottleneck Escalation Hub**: Live tracking of course demand deficits (e.g., `#ESC-9481` for `CSE 327` with 42 waitlisted students) broken down by student major.
-- **Emergency Section Provisioning**: One-click provisioning of new course sections (e.g., `CSE 327 Sec 05` in `LIB 608`) to resolve waitlist deficits.
-- **Classroom Demo Surge Simulator**: Built-in interactive simulator (`DemoHeader`) to inject 3,450 req/s traffic spikes, force section sell-outs (40/40), and restore state to baseline fixtures.
+| Route / View | User Action / Interaction | Real-Time Mutation & Sync | Rule Validations & Edge Case Handling |
+| :--- | :--- | :--- | :--- |
+| `/student/dashboard`<br/>`/student/schedule` | **Section Staging** (`+ Add to Cart`) | Dispatches `POST /api/v1/student/cart/stage`; updates `stagedSectionIds`, broadcasts over SSE and `BroadcastChannel`. | Replaces existing section if same `courseCode` staged; prevents duplicate staging; validates prerequisites against DAG. |
+| `/student/schedule` | **Section Removal** (`🗑️ Drop`) | Dispatches `DELETE /api/v1/student/cart/:sectionId`; filters out section and appends `amber` audit log. | Recalculates total staged credits in real time; clears timetable cell allocations without affecting finalized sections. |
+| `/student/schedule` | **Timetable Clash Detection** | Matrix analysis evaluates day combinations (`ST`, `MW`, `RA`, `Thu`) and time intervals dynamically. | Prevents simultaneous bookings (e.g., `11:20 AM - 12:50 PM ST`); highlights conflicting section cells in red. |
+| `/student/dashboard` | **Rule 4.2 Standing Floor Check** | Intercepts staging attempt when student credits $< 100$; opens `rule_alert` modal with academic standing criteria. | Enforces Senate policy prohibiting 400-level courses (`CSE 425`) for students below Senior Standing; routes to advisor petition. |
+| `/student/dashboard` | **Seat Exhaustion Detection** | Detects $0$ available seats on target section; halts staging and opens `section_full` modal. | Automatically queries and displays open alternative sections for the same course code with 1-click alternative selection. |
+| `/student/schedule` | **Atomic Schedule Lock** (`Confirm & Lock Schedule`) | Dispatches `POST /api/v1/student/enroll/confirm`; runs PostgreSQL transaction with `SELECT ... FOR UPDATE` row locks. | Increments section `enrolled` counters; computes deterministic SHA-256 digital signature (`SHA256:...`); issues official `#RDS-TXN-2025-XXXXX` receipt. |
 
-### 📱 Flutter Mobile Client (`apps/mobile`)
-- **Student Home Dashboard**: At-a-glance academic standing, 96 completed credits progress bar, CGPA indicator, advising clearance status, and cart tokens.
-- **Course Catalog & Details**: Full searchable course catalog with prerequisite indicators, faculty listings, time slots, room locations, and live seat badges.
-- **Visual Timetable Builder**: Interactive weekly grid displaying enrolled and staged courses across Sunday through Thursday.
-- **Petition & Exception Tracker**: Real-time status updates on submitted petitions (`PET-327-01` Approved, `PET-425-01` Pending Standing Review, `PET-361-02` Waitlisted).
-- **Seat Drop Radar Alerts**: Push notifications and alert banners alerting students when seats open in previously filled high-demand sections.
+---
+
+### 👩‍🏫 Faculty Web Portal (`apps/web` — `/faculty/exceptions`, `/faculty/courses`, `/faculty/rules`)
+
+The Faculty Portal equips department chairs and advisors with automated rule verification, 1-click petition resolution, room capacity governance, and senate policy controls.
+
+| Route / View | User Action / Interaction | Real-Time Mutation & Sync | Rule Validations & Edge Case Handling |
+| :--- | :--- | :--- | :--- |
+| `/faculty/exceptions` | **6-Point Rule Checklist Audit** | Evaluates student profile against CGPA ($\ge 3.0$), prerequisite DAG, graduation horizon, and fee clearance. | Displays green checkmarks for verified criteria; flags exceptions (e.g., `#EX-2025-0841` Rahim Ahmed missing Rule 4.2 standing). |
+| `/faculty/exceptions` | **1-Click Exception Decision** (`Approve`, `Reject`, `Flag`) | Dispatches `POST /api/v1/faculty/exceptions/decision`; updates case status to `approved`, `rejected`, or `flagged`. | On `approve`: atomically increments section `capacity` (+1) and `enrolled` (+1), logs `emerald` audit entry; on `flag`: routes to SAC 502 in-person queue. |
+| `/faculty/courses` | **Physical Capacity Expansion** (`+1` to `+15` Seats) | Dispatches `POST /api/v1/faculty/sections/expand-capacity`; adjusts section `capacity` and broadcasts state. | Enforces physical room fire-code safety limit (e.g., `LIB 602` max 55, `SAC 502` max 45); blocks expansion exceeding room threshold. |
+| `/faculty/rules` | **Senate Bypass Rule Toggles** (Active / Suspended) | Dispatches `POST /api/v1/faculty/rules/toggle`; toggles `RULE-4.2`, `RULE-2.1`, `RULE-6.3`, or `RULE-8.4`. | Immediately enables or suspends automated checks across the scheduling engine; logs executive committee action to audit trail. |
+
+---
+
+### ⚙️ Admin Operations Portal (`apps/web` — `/admin/health`, `/admin/escalations`)
+
+The Operations & Telemetry Portal provides live system observability, auto-scaling controls, SEV-1 bottleneck resolution, and a classroom surge simulator.
+
+| Route / View | User Action / Interaction | Real-Time Mutation & Sync | Telemetry Thresholds & Operational Policy |
+| :--- | :--- | :--- | :--- |
+| `/admin/health` | **Live Telemetry & SLA Tracking** | Polling & SSE stream monitors req/s, p95 latency against $200\text{ ms}$ SLA ceiling, and active connection pool. | Highlights latency breaches in red ($>200\text{ ms}$); displays pool exhaustion warnings if active connections approach pool total ($200$). |
+| `/admin/health` | **Cluster Auto-Scaling** (`Scale +2 Nodes`) | Dispatches `POST /api/v1/admin/scale`; increments `apiNodes` by $+2$, resets p95 latency to $138\text{ ms}$. | Emulates Kubernetes Horizontal Pod Autoscaler; records scaling event in telemetry and appends `emerald` audit log. |
+| `/admin/health` | **Incident Acknowledgment** (`Acknowledge Incident`) | Dispatches `POST /api/v1/admin/acknowledge`; clears `surgeSpikeActive` flag and resets alert banners. | De-escalates critical SEV-1 visual indicators once on-call engineers confirm cluster mitigation. |
+| `/admin/escalations` | **SEV-1 Bottleneck Monitoring** | Displays real-time waitlist deficit cards (e.g., `#ESC-9481` for `CSE 327` with 42 waitlisted students). | Categorizes demand by major (B.Sc CSE 66%, B.Sc CS 22%, EEE/ETE 12%); tracks 30-minute demand curves. |
+| `/admin/escalations` | **Emergency Section Provisioning** (`Provision Sec 05`) | Dispatches `POST /api/v1/admin/sections/emergency`; creates `CSE 327 Sec 05` (40 seats) in `LIB 608`. | Marks escalation status as `Mitigated`; deducts 40 seats from deficit; broadcasts new section to student cart catalog. |
+| `DemoHeader` (Global) | **Surge Simulator & State Reset** (`Trigger Surge`, `Reset`) | `POST /api/v1/demo/surge` (3,450 req/s spike) & `POST /api/v1/demo/reset` (pristine fixture restore). | Injects simulated load spike breaching SLA ($275\text{ ms}$ p95); enables live demonstrations of system resilience and failover. |
+
+---
+
+### 📱 Flutter Mobile Client (`apps/mobile` — Cross-Platform Student Companion)
+
+The Flutter mobile application provides students with on-the-go schedule management, course catalog discovery, petition tracking, and real-time seat drop notifications.
+
+| Screen / View | User Action / Interaction | Mobile State Sync (`ChangeNotifier`) | Feature Capabilities & Rule Integration |
+| :--- | :--- | :--- | :--- |
+| `DashboardScreen` (`/home`) | View academic progress, standing, and cart token (`#NSU-241215-9042`). | Observes `AppState` fields: completed credits ($96/130$), CGPA ($3.64$), standing (`Senior Standing`). | Displays advising clearance badge from Dr. Nova Ahmed and countdown timer to slot expiration. |
+| `CourseCatalogScreen`<br/>`CourseDetailScreen` | Search and filter courses by code, title, and department; inspect prerequisites and syllabus. | Reads section availability, faculty assignments, rooms, and enrolled seat ratios in real time. | Shows live seat status badges (`Available`, `Few Seats Left`, `Full`); verifies prerequisites before staging. |
+| `ScheduleScreen` | Weekly timetable visualizer across Sunday through Thursday with time interval blocks. | Dynamically renders `stagedCourses` list across time grids matching NSU class slots. | Color-codes courses; detects overlapping schedules; provides quick 1-tap course detail preview. |
+| `PetitionsScreen` | Track submitted academic petitions (`PET-327-01`, `PET-425-01`, `PET-361-02`, `PET-331-01`). | Reflects live petition status: `approved`, `pending`, `waitlisted`, and `rejected`. | Displays auto-approval tokens, advisor review notes, waitlist queue positions, and alternative open sections. |
+| `RadarScreen` / Notification Banners | Real-Time Seat Drop Radar & system alerts. | Subscribes to radar alerts (`seat_drop`, `fast_enroll`, `rule_alert`, `clearance`). | Instant push notification when a seat opens in a filled section (e.g., `CSE 327 Sec 02`); 1-tap seat claim action. |
 
 ---
 
