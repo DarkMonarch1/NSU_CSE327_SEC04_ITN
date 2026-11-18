@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { app } from './app';
+import { backendStore } from './store/backendStore';
 import { checkCreditFloor, detectScheduleClashes } from './services/ruleValidator';
 import { INITIAL_STUDENT, INITIAL_SECTIONS } from './seedData';
 import { CourseSection } from './types';
@@ -68,5 +69,78 @@ describe('SmartAdvisor Bootstrap & Rule Validator', () => {
     expect(clashes[0].sectionB.id).toBe(sectionB.id);
     expect(clashes[0].day).toBe('ST');
     expect(clashes[0].time).toBe('11:20 AM - 12:50 PM');
+  });
+});
+
+describe('Student Portal Advising & ACID Enrollment Routes', () => {
+  beforeEach(() => {
+    backendStore.resetState();
+  });
+
+  it('POST /api/v1/student/cart/stage with { sectionId: "CSE331-01" } returns 200 and adds CSE331-01 to stagedSectionIds', async () => {
+    const res = await request(app)
+      .post('/api/v1/student/cart/stage')
+      .send({ sectionId: 'CSE331-01' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.state.stagedSectionIds).toContain('CSE331-01');
+  });
+
+  it('POST /api/v1/student/cart/stage with { sectionId: "CSE425-01" } returns 422 with modal: "rule_alert" and payload.ruleCode === "RULE-4.2"', async () => {
+    const res = await request(app)
+      .post('/api/v1/student/cart/stage')
+      .send({ sectionId: 'CSE425-01' });
+
+    expect(res.status).toBe(422);
+    expect(res.body.ok).toBe(false);
+    expect(res.body.modal).toBe('rule_alert');
+    expect(res.body.payload.ruleCode).toBe('RULE-4.2');
+    expect(res.body.payload.studentCredits).toBe(96);
+    expect(res.body.payload.requiredCredits).toBe(100);
+  });
+
+  it('POST /api/v1/student/cart/stage with { sectionId: "CSE327-03" } (40/40 full) returns 409 with modal: "section_full" and non-empty payload.alternatives', async () => {
+    const res = await request(app)
+      .post('/api/v1/student/cart/stage')
+      .send({ sectionId: 'CSE327-03' });
+
+    expect(res.status).toBe(409);
+    expect(res.body.ok).toBe(false);
+    expect(res.body.modal).toBe('section_full');
+    expect(res.body.payload.fullSection.id).toBe('CSE327-03');
+    expect(res.body.payload.alternatives.length).toBeGreaterThan(0);
+    expect(
+      res.body.payload.alternatives.every(
+        (alt: CourseSection) => alt.courseCode === 'CSE 327' && alt.capacity - alt.enrolled > 0
+      )
+    ).toBe(true);
+  });
+
+  it('DELETE /api/v1/student/cart/MAT361-04 returns 200 and removes MAT361-04 from stagedSectionIds', async () => {
+    expect(backendStore.getState().stagedSectionIds).toContain('MAT361-04');
+
+    const res = await request(app).delete('/api/v1/student/cart/MAT361-04');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.state.stagedSectionIds).not.toContain('MAT361-04');
+  });
+
+  it('POST /api/v1/student/enroll/confirm returns 200, increments enrolled on staged sections, and returns a ScheduleReceipt whose digitalSignature starts with "SHA256:"', async () => {
+    const preConfirmState = backendStore.getState();
+    const cse327Before = preConfirmState.sections.find((s) => s.id === 'CSE327-01')!;
+
+    const res = await request(app).post('/api/v1/student/enroll/confirm');
+
+    expect(res.status).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.receipt).toBeDefined();
+    expect(res.body.receipt.digitalSignature.startsWith('SHA256:')).toBe(true);
+    expect(res.body.receipt.transactionId).toMatch(/^#RDS-TXN-2025-\d{5}$/);
+    expect(res.body.receipt.totalCredits).toBe(10);
+
+    const cse327After = res.body.state.sections.find((s: CourseSection) => s.id === 'CSE327-01')!;
+    expect(cse327After.enrolled).toBe(cse327Before.enrolled + 1);
   });
 });
